@@ -1,4 +1,8 @@
 import { useEffect, useState } from "react";
+import { Table, Tag, Button } from "antd";
+import type { TableProps } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import CreateUserModal from "./create.users.modal";
 
 interface IUser {
   _id: string | number;
@@ -9,6 +13,7 @@ interface IUser {
 
 const UsersTable = () => {
   const [users, setUsers] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -26,15 +31,16 @@ const UsersTable = () => {
         password: '123456',
       }),
     });
-    const data = await response.json();
-    const token = data.data.access_token;
-    // console.log(token);
+    const d = await response.json();
+    if (d.data) {
+      localStorage.setItem("access_token", d.data.access_token);
+    }
 
     // get all users
     const response2 = await fetch('http://localhost:8000/api/v1/users/all', {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${d.data.access_token}`,
       },
     });
     const dataUser = await response2.json();
@@ -42,27 +48,46 @@ const UsersTable = () => {
     setUsers(dataUser.data.result);
   }
 
+  const columns: TableProps<IUser>['columns'] = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (value, record) => {
+        return <a>{record.name}</a>
+      }
+    },
+    {
+      title: 'Email',
+      dataIndex: 'email',
+      key: 'email',
+    },
+    {
+      title: 'Role',
+      dataIndex: 'role',
+      key: 'role',
+      render: (text: string) => {
+        return <Tag color="blue">{text}</Tag>
+      }
+    },
+  ];
+
+  const access_token = localStorage.getItem("access_token") as string;
   return (
     <>
-      <h2>UsersTable page</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users?.map((user: IUser) => (
-            <tr key={user._id}>
-              <td>{user.name}</td>
-              <td>{user.email}</td>
-              <td>{user.role}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2>UsersTable page</h2>
+        <Button icon={<PlusOutlined />} type="primary" onClick={() => setIsModalOpen(true)}>Add User</Button>
+      </div>
+
+      <Table dataSource={users} columns={columns} rowKey={(record) => record._id} />
+
+      <CreateUserModal
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        access_token={access_token}
+        fetchUsers={fetchUsers}
+      />
     </>
   )
 }
