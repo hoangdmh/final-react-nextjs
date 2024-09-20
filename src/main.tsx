@@ -7,8 +7,8 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import ManageUser from './components/manage.users.tsx';
 import ErrorPage from './components/error-page.tsx';
+import UsersPage from './screens/users.page.tsx';
 
 const router = createBrowserRouter([
   {
@@ -18,17 +18,17 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <div>Child 1</div>,
+        element: <div>Home page</div>,
       },
       {
         path: "/users",
-        element: <div>Child 2 Users</div>,
+        element: <UsersPage />,
       },
     ],
   },
   {
-    path: "/manage-users",
-    element: <ManageUser />,
+    path: "/manage",
+    element: <div>Child 2</div>,
   },
 ]);
 
