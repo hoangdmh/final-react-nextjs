@@ -3,17 +3,25 @@ import { Table, Tag, Button } from "antd";
 import type { TableProps } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import CreateUserModal from "./create.users.modal";
+import UpdateUserModal from "./update.users.modal";
 
-interface IUser {
+export interface IUser {
   _id: string | number;
   name: string;
   email: string;
   role: string;
+  address: string;
+  gender: string;
+  password: string;
+  age: string;
 }
 
 const UsersTable = () => {
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [userSelected, setUserSelected] = useState<IUser | null>(null);
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -69,9 +77,23 @@ const UsersTable = () => {
         return <Tag color="blue">{text}</Tag>
       }
     },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (value, record: IUser) => {
+        return <Button onClick={() => handleUpdateUser(record)}>Edit</Button>
+      }
+    },
   ];
 
   const access_token = localStorage.getItem("access_token") as string;
+
+  const handleUpdateUser = (record: IUser) => {
+    console.log('check record', record);
+    setIsUpdateModalOpen(true);
+    setUserSelected(record);
+  }
+
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -91,6 +113,15 @@ const UsersTable = () => {
         setIsModalOpen={setIsModalOpen}
         access_token={access_token}
         fetchUsers={fetchUsers}
+      />
+
+      <UpdateUserModal
+        isUpdateModalOpen={isUpdateModalOpen}
+        setIsUpdateModalOpen={setIsUpdateModalOpen}
+        access_token={access_token}
+        fetchUsers={fetchUsers}
+        userSelected={userSelected}
+        setUserSelected={setUserSelected}
       />
     </>
   )
