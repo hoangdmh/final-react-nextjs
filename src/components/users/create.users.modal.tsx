@@ -21,10 +21,6 @@ const CreateUserModal = (props: IProps) => {
   const { isModalOpen, setIsModalOpen, access_token, fetchUsers } = props;
   const [form] = Form.useForm();
 
-  const handleOk = () => {
-    form.submit()
-  };
-
   const handleCancel = () => {
     form.resetFields();
     setIsModalOpen(false);
@@ -33,7 +29,7 @@ const CreateUserModal = (props: IProps) => {
   const onFinish = async (values: UserFormValues) => {
     const { name, email, password, age, gender, role, address } = values;
     const payload = { name, email, password, age, gender, role, address };
-    console.log('payload', payload)
+    // console.log('payload', payload)
 
     const response = await fetch('http://localhost:8000/api/v1/users', {
       method: 'POST',
@@ -41,13 +37,14 @@ const CreateUserModal = (props: IProps) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${access_token}`,
       },
-      body: JSON.stringify(payload),
+      // body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload }),
     });
     const d = await response.json();
     if (d.data) {
-      //success
+      //sau khi tạo thành công, fetch lại danh sách user
       await fetchUsers();
-      
+
       notification.success({
         message: "Tạo mới user thành công.",
       })
@@ -66,7 +63,7 @@ const CreateUserModal = (props: IProps) => {
       <Modal
         title="Add new user"
         open={isModalOpen}
-        onOk={handleOk}
+        onOk={() => form.submit()}
         onCancel={handleCancel}
         maskClosable={false}
       >

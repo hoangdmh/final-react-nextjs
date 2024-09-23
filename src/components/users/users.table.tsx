@@ -14,7 +14,6 @@ interface IUser {
 const UsersTable = () => {
   const [users, setUsers] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -80,7 +79,12 @@ const UsersTable = () => {
         <Button icon={<PlusOutlined />} type="primary" onClick={() => setIsModalOpen(true)}>Add User</Button>
       </div>
 
-      <Table dataSource={users} columns={columns} rowKey={(record) => record._id} />
+      <Table
+        dataSource={users}
+        columns={columns}
+        rowKey={(record) => record._id}
+        loading={users.length > 0 ? false : true}
+      />
 
       <CreateUserModal
         isModalOpen={isModalOpen}
