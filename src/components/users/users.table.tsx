@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { Table, Tag, Button } from "antd";
+import { Table, Tag, Button, Popconfirm, notification } from "antd";
 import type { TableProps } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import CreateUserModal from "./create.users.modal";
 import UpdateUserModal from "./update.users.modal";
 
@@ -81,7 +81,20 @@ const UsersTable = () => {
       title: 'Action',
       key: 'action',
       render: (value, record: IUser) => {
-        return <Button onClick={() => handleUpdateUser(record)}>Edit</Button>
+        return (
+          <div style={{ display: 'flex', gap: 10 }}>
+            <Button icon={<EditOutlined />} onClick={() => handleUpdateUser(record)}>Edit</Button>
+            <Popconfirm
+              title="Delete user"
+              description={`Are you sure delete ${record.name} ?`}
+              onConfirm={() => confirm(record)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="primary" danger ghost icon={<DeleteOutlined />}>Delete</Button>
+            </Popconfirm>
+          </div>
+        )
       }
     },
   ];
@@ -89,10 +102,36 @@ const UsersTable = () => {
   const access_token = localStorage.getItem("access_token") as string;
 
   const handleUpdateUser = (record: IUser) => {
-    console.log('check record', record);
+    //console.log('check record', record);
     setIsUpdateModalOpen(true);
     setUserSelected(record);
   }
+
+  const confirm = async (record: IUser) => {
+    //console.log('check record', record);
+    const id = record._id;
+    const response = await fetch(`http://localhost:8000/api/v1/users/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${access_token}`,
+      },
+    });
+    const d = await response.json();
+    if (d.data) {
+      //sau khi delete, fetch lại danh sách user
+      await fetchUsers();
+
+      notification.success({
+        message: `Delete ${record.name} success`,
+      })
+    } else {
+      notification.error({
+        message: "Có lỗi xảy ra",
+        description: JSON.stringify(d.message)
+      })
+    }
+  };
 
   return (
     <>
