@@ -21,37 +21,28 @@ const UsersTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [userSelected, setUserSelected] = useState<IUser | null>(null);
+  const [meta, setMeta] = useState({
+    current: 1,
+    pageSize: 7,
+    pages: 0,
+    total: 0
+  });
+  const access_token = localStorage.getItem("access_token") as string;
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
-    // login
-    const response = await fetch('http://localhost:8000/api/v1/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        username: 'admin@gmail.com',
-        password: '123456',
-      }),
-    });
-    const d = await response.json();
-    if (d.data) {
-      localStorage.setItem("access_token", d.data.access_token);
-    }
-
     // get all users
-    const response2 = await fetch('http://localhost:8000/api/v1/users/all', {
+    const response2 = await fetch(`http://localhost:8000/api/v1/users/all?page=${meta.current}&limit=${meta.pageSize}`, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${d.data.access_token}`,
+        'Authorization': `Bearer ${access_token}`,
       },
     });
     const dataUser = await response2.json();
-    // console.log(dataUser);
+    console.log(dataUser);
     setUsers(dataUser.data.result);
   }
 
@@ -99,8 +90,6 @@ const UsersTable = () => {
     },
   ];
 
-  const access_token = localStorage.getItem("access_token") as string;
-
   const handleUpdateUser = (record: IUser) => {
     //console.log('check record', record);
     setIsUpdateModalOpen(true);
@@ -145,6 +134,15 @@ const UsersTable = () => {
         columns={columns}
         rowKey={(record) => record._id}
         loading={users.length > 0 ? false : true}
+        pagination={{
+          current: meta.current,
+          pageSize: meta.pageSize,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+          onChange: (page, pageSize) => {
+            console.log('check page pageSize', page, pageSize);
+            setMeta({ ...meta, current: page, pageSize: pageSize });
+          },
+        }}
       />
 
       <CreateUserModal
